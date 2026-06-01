@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="theme-color" content="#080808">
+  <title>Калькулятор сна</title>
+
+  <!-- Шрифт: строгий гротеск без засечек -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+    /* ══════════════════════════════════════════
+       СБРОС И ПЕРЕМЕННЫЕ
+       ══════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    :root {
+      --bg:         #080808;
+      --bg2:        #0d0d0d;
+      --bg3:        #131313;
+      --red:        #8B0000;
+      --red-bright: #b52b2b;
+      --red-glow:   rgba(139, 0, 0, 0.22);
+      --ash:        #c8c4bc;
+      --ash2:       #8e8880;
+      --ash3:       #4e4a44;
+      --white:      #e8e4dc;
+      --border:     rgba(200, 196, 188, 0.07);
+      --border-red: rgba(139, 0, 0, 0.35);
+    }
+
+    html, body {
+      height: 100%;
+      min-height: -webkit-fill-available;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ash);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+    }
+
+    /* Текстура: сканирующие линии */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.05) 2px,
+        rgba(0, 0, 0, 0.05) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ══════════════════════════════════════════
+       ОБЁРТКА
+       ══════════════════════════════════════════ */
+    .wrapper {
+      width: 100%;
+      max-width: 480px;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding: 56px 26px 80px;
+      padding-top:    calc(56px + env(safe-area-inset-top));
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══════════════════════════════════════════
+       ШАПКА
+       ══════════════════════════════════════════ */
+    .header {
+      margin-bottom: 52px;
+    }
+
+    .eye-dot {
+      width: 9px;
+      height: 9px;
+      background: var(--red);
+      border-radius: 50%;
+      box-shadow: 0 0 14px var(--red), 0 0 5px var(--red);
+      margin-bottom: 22px;
+      animation: eye-pulse 3.5s ease-in-out infinite;
+    }
+
+    @keyframes eye-pulse {
+      0%, 100% { opacity: 1;   box-shadow: 0 0 14px var(--red), 0 0 5px var(--red); }
+      50%       { opacity: 0.5; box-shadow: 0 0 6px  var(--red); }
+    }
+
+    .title {
+      font-size: clamp(30px, 9vw, 46px);
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -1.5px;
+      line-height: 1;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .title-line {
+      width: 36px;
+      height: 1px;
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      margin-bottom: 14px;
+    }
+
+    .subtitle {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ash3);
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+    }
+
+    /* ══════════════════════════════════════════
+       ФОРМА
+       ══════════════════════════════════════════ */
+    .form-section {
+      margin-bottom: 44px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ash3);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    /* Два числовых поля: ЧЧ и ММ */
+    .time-row {
+      display: flex;
+      align-items: center;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--red);
+      padding: 14px 22px;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+    }
+
+    .time-row:focus-within {
+      background: var(--bg3);
+      border-color: var(--border-red);
+      border-left-color: var(--red-bright);
+      box-shadow: 0 0 24px var(--red-glow);
+    }
+
+    /* Встряхивание при ошибке */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+
+    .time-row.error {
+      border-color: var(--red-bright);
+      animation: shake 0.35s ease;
+    }
+
+    .time-part {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      width: 2.2ch;          /* ровно под 2 цифры */
+      text-align: center;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0;
+      /* убираем спиннер у number-инпута */
+      -moz-appearance: textfield;
+    }
+
+    .time-part::-webkit-inner-spin-button,
+    .time-part::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .time-sep {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--ash3);
+      padding: 0 4px;
+      line-height: 1;
+      user-select: none;
+    }
+
+    /* ── Кнопка ── */
+    .btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--red);
+      color: var(--ash);
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      padding: 17px 22px;
+      cursor: pointer;
+      border-radius: 0;
+      margin-top: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: color 0.28s;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--red);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn:hover           { color: var(--white); }
+    .btn:hover::before   { transform: scaleX(1); }
+    .btn:active          { opacity: 0.75; }
+
+    .btn-text { position: relative; z-index: 1; }
+
+    /* ══════════════════════════════════════════
+       РЕЗУЛЬТАТЫ
+       ══════════════════════════════════════════ */
+    .results {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .results.visible {
+      display: flex;
+      animation: fade-up 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .results-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--ash3);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .result-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 16px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.25s, background 0.25s;
+    }
+
+    /* Красная полоска слева */
+    .result-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--red);
+      opacity: 0.3;
+      transition: opacity 0.25s;
+    }
+
+    /* Первая карточка выделяется классом .best */
+    .result-item.best::before {
+      opacity: 1;
+      box-shadow: 0 0 10px var(--red);
+    }
+
+    .result-item.best .result-time {
+      color: var(--red-bright);
+    }
+
+    .result-item:hover {
+      background: var(--bg3);
+      border-color: var(--border-red);
+    }
+
+    .result-item:hover::before { opacity: 0.9; }
+
+    .result-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .result-cycles {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ash2);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .result-hours {
+      font-size: 10px;
+      color: var(--ash3);
+    }
+
+    .result-time {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: 3px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ══════════════════════════════════════════
+       ПОДВАЛ
+       ══════════════════════════════════════════ */
+    .footer-note {
+      margin-top: auto;
+      padding-top: 40px;
+      font-size: 10px;
+      color: var(--ash3);
+      letter-spacing: 1.5px;
+      line-height: 1.9;
+      opacity: 0.45;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- ── ШАПКА ── -->
+  <header class="header">
+    <div class="eye-dot"></div>
+    <h1 class="title">Калькулятор сна</h1>
+    <div class="title-line"></div>
+    <p class="subtitle">Цикл = 90 мин · Засыпание = 15 мин</p>
+  </header>
+
+  <!-- ── ФОРМА ── -->
+  <section class="form-section">
+    <label class="form-label">Время пробуждения</label>
+
+    <!-- Два отдельных числовых поля вместо type="time" — надёжно на всех iOS Safari -->
+    <div class="time-row" id="timeRow">
+      <input
+        type="number"
+        id="wakeHour"
+        class="time-part"
+        min="0" max="23"
+        placeholder="07"
+        inputmode="numeric"
+      >
+      <span class="time-sep">:</span>
+      <input
+        type="number"
+        id="wakeMin"
+        class="time-part"
+        min="0" max="59"
+        placeholder="00"
+        inputmode="numeric"
+      >
+    </div>
+
+    <button class="btn" onclick="calculate()">
+      <span class="btn-text">Рассчитать</span>
+    </button>
+  </section>
+
+  <!-- ── РЕЗУЛЬТАТЫ ── -->
+  <section class="results" id="results">
+    <p class="results-label">Ложитесь спать в</p>
+  </section>
+
+  <!-- ── ПОДВАЛ ── -->
+  <footer class="footer-note">
+    Засыпание: 15 мин · Один цикл: 90 мин<br>
+    Чем больше циклов — тем глубже восстановление.
+  </footer>
+
+</div>
+
+<script>
+  /* ══════════════════════════════════════════
+     ПРЕДЗАПОЛНЕНИЕ: текущее время при загрузке
+     ══════════════════════════════════════════ */
+  (function () {
+    var now = new Date();
+    document.getElementById('wakeHour').value = now.getHours();
+    document.getElementById('wakeMin').value  = String(now.getMinutes()).padStart(2, '0');
+  })();
+
+  /* ══════════════════════════════════════════
+     ЛОГИКА РАСЧЁТА
+     ══════════════════════════════════════════ */
+
+  var FALL_ASLEEP = 15;   // мин на засыпание
+  var CYCLE       = 90;   // мин в одном цикле
+
+  var OPTIONS = [
+    { count: 6, label: '6 циклов',  dur: '9 часов' },
+    { count: 5, label: '5 циклов',  dur: '7.5 часов' },
+    { count: 4, label: '4 цикла',   dur: '6 часов' },
+    { count: 3, label: '3 цикла',   dur: '4.5 часа' },
+  ];
+
+  function pad(n) {
+    return String(Math.floor(n)).padStart(2, '0');
+  }
+
+  function calculate() {
+    var h = parseInt(document.getElementById('wakeHour').value, 10);
+    var m = parseInt(document.getElementById('wakeMin').value,  10);
+
+    /* Валидация */
+    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+      var row = document.getElementById('timeRow');
+      row.classList.remove('error');
+      void row.offsetWidth;          // reflow для повторного запуска анимации
+      row.classList.add('error');
+      return;
+    }
+
+    var wakeTotal = h * 60 + m;
+    var resultsEl = document.getElementById('results');
+
+    /* Удаляем старые карточки */
+    resultsEl.querySelectorAll('.result-item').forEach(function (el) { el.remove(); });
+    resultsEl.classList.remove('visible');
+
+    OPTIONS.forEach(function (opt, idx) {
+      var total = FALL_ASLEEP + opt.count * CYCLE;
+      var bed   = ((wakeTotal - total) % 1440 + 1440) % 1440;
+
+      var item = document.createElement('div');
+      item.className = 'result-item' + (idx === 0 ? ' best' : '');
+      item.innerHTML =
+        '<div class="result-info">' +
+          '<span class="result-cycles">' + opt.label + '</span>' +
+          '<span class="result-hours">'  + opt.dur   + ' сна</span>' +
+        '</div>' +
+        '<span class="result-time">' + pad(bed / 60) + ':' + pad(bed % 60) + '</span>';
+
+      resultsEl.appendChild(item);
+    });
+
+    void resultsEl.offsetWidth;
+    resultsEl.classList.add('visible');
+  }
+
+  /* Переход между полями: после ввода двух цифр часов — фокус на минуты */
+  document.getElementById('wakeHour').addEventListener('input', function () {
+    if (this.value.length >= 2) document.getElementById('wakeMin').focus();
+  });
+
+  /* Enter запускает расчёт */
+  [document.getElementById('wakeHour'), document.getElementById('wakeMin')]
+    .forEach(function (el) {
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') calculate();
+      });
+    });
+
+  /* Снимаем класс ошибки после любого изменения */
+  document.getElementById('timeRow').addEventListener('input', function () {
+    this.classList.remove('error');
+  });
+</script>
+
+</body>
+</html>
