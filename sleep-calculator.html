@@ -28,19 +28,18 @@
     }
 
     :root {
-      --bg:          #080808;   /* глубокий чёрный */
-      --bg2:         #0d0d0d;
-      --bg3:         #131313;
-      --red:         #8B0000;   /* кровянистый красный */
-      --red2:        #9A1F1F;
-      --red-bright:  #b52b2b;
-      --red-glow:    rgba(139, 0, 0, 0.22);
-      --ash:         #c8c4bc;   /* пепельно-белый */
-      --ash2:        #8e8880;
-      --ash3:        #4e4a44;
-      --white:       #e8e4dc;
-      --border:      rgba(200, 196, 188, 0.07);
-      --border-red:  rgba(139, 0, 0, 0.35);
+      --bg:         #080808;
+      --bg2:        #0d0d0d;
+      --bg3:        #131313;
+      --red:        #8B0000;
+      --red-bright: #b52b2b;
+      --red-glow:   rgba(139, 0, 0, 0.22);
+      --ash:        #c8c4bc;
+      --ash2:       #8e8880;
+      --ash3:       #4e4a44;
+      --white:      #e8e4dc;
+      --border:     rgba(200, 196, 188, 0.07);
+      --border-red: rgba(139, 0, 0, 0.35);
     }
 
     html, body {
@@ -57,9 +56,7 @@
       overflow-x: hidden;
     }
 
-    /* ══════════════════════════════════════════
-       СКАНИРУЮЩИЕ ЛИНИИ — текстурный эффект
-       ══════════════════════════════════════════ */
+    /* Текстура: сканирующие линии */
     body::before {
       content: '';
       position: fixed;
@@ -97,7 +94,6 @@
       margin-bottom: 52px;
     }
 
-    /* Пульсирующая «гулевая» точка — единственный декоративный элемент */
     .eye-dot {
       width: 9px;
       height: 9px;
@@ -123,7 +119,6 @@
       margin-bottom: 14px;
     }
 
-    /* Тонкая красная черта под заголовком */
     .title-line {
       width: 36px;
       height: 1px;
@@ -141,7 +136,7 @@
     }
 
     /* ══════════════════════════════════════════
-       ФОРМА ВВОДА
+       ФОРМА
        ══════════════════════════════════════════ */
     .form-section {
       margin-bottom: 44px;
@@ -157,35 +152,69 @@
       margin-bottom: 12px;
     }
 
-    /* Поле времени: крупное, брутальное */
-    .time-input {
-      width: 100%;
+    /* Два числовых поля: ЧЧ и ММ */
+    .time-row {
+      display: flex;
+      align-items: center;
       background: var(--bg2);
       border: 1px solid var(--border);
       border-left: 2px solid var(--red);
-      color: var(--white);
-      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-      font-size: 40px;
-      font-weight: 700;
-      letter-spacing: 6px;
-      padding: 18px 22px;
-      outline: none;
-      border-radius: 0;
-      -webkit-appearance: none;
-      appearance: none;
-      transition: background 0.25s, border-color 0.25s, box-shadow 0.25s;
+      padding: 14px 22px;
+      transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
     }
 
-    .time-input:focus {
+    .time-row:focus-within {
       background: var(--bg3);
       border-color: var(--border-red);
       border-left-color: var(--red-bright);
-      box-shadow: 0 0 24px var(--red-glow), inset 0 0 16px rgba(0, 0, 0, 0.35);
+      box-shadow: 0 0 24px var(--red-glow);
     }
 
-    /* Safari: выравнивание значения времени */
-    .time-input::-webkit-date-and-time-value {
-      text-align: left;
+    /* Встряхивание при ошибке */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+
+    .time-row.error {
+      border-color: var(--red-bright);
+      animation: shake 0.35s ease;
+    }
+
+    .time-part {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--white);
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      width: 2.2ch;          /* ровно под 2 цифры */
+      text-align: center;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0;
+      /* убираем спиннер у number-инпута */
+      -moz-appearance: textfield;
+    }
+
+    .time-part::-webkit-inner-spin-button,
+    .time-part::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .time-sep {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--ash3);
+      padding: 0 4px;
+      line-height: 1;
+      user-select: none;
     }
 
     /* ── Кнопка ── */
@@ -208,7 +237,6 @@
       transition: color 0.28s;
     }
 
-    /* Фоновое заливание при нажатии */
     .btn::before {
       content: '';
       position: absolute;
@@ -219,14 +247,14 @@
       transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .btn:hover { color: var(--white); }
-    .btn:hover::before { transform: scaleX(1); }
-    .btn:active { opacity: 0.75; }
+    .btn:hover           { color: var(--white); }
+    .btn:hover::before   { transform: scaleX(1); }
+    .btn:active          { opacity: 0.75; }
 
     .btn-text { position: relative; z-index: 1; }
 
     /* ══════════════════════════════════════════
-       БЛОК РЕЗУЛЬТАТОВ
+       РЕЗУЛЬТАТЫ
        ══════════════════════════════════════════ */
     .results {
       display: none;
@@ -253,7 +281,6 @@
       margin-bottom: 4px;
     }
 
-    /* Карточка одного варианта */
     .result-item {
       background: var(--bg2);
       border: 1px solid var(--border);
@@ -266,21 +293,25 @@
       transition: border-color 0.25s, background 0.25s;
     }
 
-    /* Красная вертикальная полоска слева */
+    /* Красная полоска слева */
     .result-item::before {
       content: '';
       position: absolute;
       left: 0; top: 0; bottom: 0;
       width: 2px;
       background: var(--red);
-      opacity: 0.35;
+      opacity: 0.3;
       transition: opacity 0.25s;
     }
 
-    /* Первый вариант (6 циклов) — самый оптимальный, выделяем */
-    .result-item:first-child::before {
+    /* Первая карточка выделяется классом .best */
+    .result-item.best::before {
       opacity: 1;
       box-shadow: 0 0 10px var(--red);
+    }
+
+    .result-item.best .result-time {
+      color: var(--red-bright);
     }
 
     .result-item:hover {
@@ -290,7 +321,6 @@
 
     .result-item:hover::before { opacity: 0.9; }
 
-    /* Левая часть: цикл + часы */
     .result-info {
       display: flex;
       flex-direction: column;
@@ -308,21 +338,14 @@
     .result-hours {
       font-size: 10px;
       color: var(--ash3);
-      letter-spacing: 0.5px;
     }
 
-    /* Правая часть: время — крупно */
     .result-time {
       font-size: 30px;
       font-weight: 900;
       color: var(--white);
       letter-spacing: 3px;
       font-variant-numeric: tabular-nums;
-      transition: color 0.25s;
-    }
-
-    .result-item:first-child .result-time {
-      color: var(--red-bright);
     }
 
     /* ══════════════════════════════════════════
@@ -354,24 +377,37 @@
 
   <!-- ── ФОРМА ── -->
   <section class="form-section">
-    <label class="form-label" for="wakeTime">Время пробуждения</label>
+    <label class="form-label">Время пробуждения</label>
 
-    <input
-      type="time"
-      id="wakeTime"
-      class="time-input"
-      placeholder="07:00"
-    >
+    <!-- Два отдельных числовых поля вместо type="time" — надёжно на всех iOS Safari -->
+    <div class="time-row" id="timeRow">
+      <input
+        type="number"
+        id="wakeHour"
+        class="time-part"
+        min="0" max="23"
+        placeholder="07"
+        inputmode="numeric"
+      >
+      <span class="time-sep">:</span>
+      <input
+        type="number"
+        id="wakeMin"
+        class="time-part"
+        min="0" max="59"
+        placeholder="00"
+        inputmode="numeric"
+      >
+    </div>
 
-    <button class="btn" id="calcBtn" onclick="calculate()">
+    <button class="btn" onclick="calculate()">
       <span class="btn-text">Рассчитать</span>
     </button>
   </section>
 
-  <!-- ── РЕЗУЛЬТАТЫ (скрыты до расчёта) ── -->
+  <!-- ── РЕЗУЛЬТАТЫ ── -->
   <section class="results" id="results">
     <p class="results-label">Ложитесь спать в</p>
-    <!-- Карточки вставляются через JS -->
   </section>
 
   <!-- ── ПОДВАЛ ── -->
@@ -384,72 +420,88 @@
 
 <script>
   /* ══════════════════════════════════════════
+     ПРЕДЗАПОЛНЕНИЕ: текущее время при загрузке
+     ══════════════════════════════════════════ */
+  (function () {
+    var now = new Date();
+    document.getElementById('wakeHour').value = now.getHours();
+    document.getElementById('wakeMin').value  = String(now.getMinutes()).padStart(2, '0');
+  })();
+
+  /* ══════════════════════════════════════════
      ЛОГИКА РАСЧЁТА
      ══════════════════════════════════════════ */
 
-  const FALL_ASLEEP_MIN = 15;   // минут на засыпание
-  const CYCLE_MIN       = 90;   // длина одного цикла сна в минутах
-  const MINS_IN_DAY     = 1440; // минут в сутках
+  var FALL_ASLEEP = 15;   // мин на засыпание
+  var CYCLE       = 90;   // мин в одном цикле
 
-  // Варианты: количество циклов → подпись и длительность
-  const CYCLE_OPTIONS = [
-    { count: 6, label: '6 циклов',  duration: '9 часов' },
-    { count: 5, label: '5 циклов',  duration: '7.5 часов' },
-    { count: 4, label: '4 цикла',   duration: '6 часов' },
-    { count: 3, label: '3 цикла',   duration: '4.5 часа' },
+  var OPTIONS = [
+    { count: 6, label: '6 циклов',  dur: '9 часов' },
+    { count: 5, label: '5 циклов',  dur: '7.5 часов' },
+    { count: 4, label: '4 цикла',   dur: '6 часов' },
+    { count: 3, label: '3 цикла',   dur: '4.5 часа' },
   ];
 
   function pad(n) {
-    return String(n).padStart(2, '0');
+    return String(Math.floor(n)).padStart(2, '0');
   }
 
   function calculate() {
-    const input = document.getElementById('wakeTime').value;
-    if (!input) return;
+    var h = parseInt(document.getElementById('wakeHour').value, 10);
+    var m = parseInt(document.getElementById('wakeMin').value,  10);
 
-    // Разбираем строку вида "HH:MM"
-    const [hStr, mStr] = input.split(':');
-    const wakeTotal = parseInt(hStr, 10) * 60 + parseInt(mStr, 10);
+    /* Валидация */
+    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) {
+      var row = document.getElementById('timeRow');
+      row.classList.remove('error');
+      void row.offsetWidth;          // reflow для повторного запуска анимации
+      row.classList.add('error');
+      return;
+    }
 
-    const resultsEl = document.getElementById('results');
+    var wakeTotal = h * 60 + m;
+    var resultsEl = document.getElementById('results');
 
-    // Удаляем предыдущие карточки (если пользователь нажал кнопку повторно)
-    resultsEl.querySelectorAll('.result-item').forEach(el => el.remove());
-    // Убираем класс visible, чтобы анимация сработала снова
+    /* Удаляем старые карточки */
+    resultsEl.querySelectorAll('.result-item').forEach(function (el) { el.remove(); });
     resultsEl.classList.remove('visible');
 
-    // Строим карточку для каждого варианта
-    CYCLE_OPTIONS.forEach(({ count, label, duration }) => {
-      const totalSleep = FALL_ASLEEP_MIN + count * CYCLE_MIN;
+    OPTIONS.forEach(function (opt, idx) {
+      var total = FALL_ASLEEP + opt.count * CYCLE;
+      var bed   = ((wakeTotal - total) % 1440 + 1440) % 1440;
 
-      // Отнимаем от времени пробуждения и корректируем переход за полночь
-      let bedMinutes = wakeTotal - totalSleep;
-      bedMinutes = ((bedMinutes % MINS_IN_DAY) + MINS_IN_DAY) % MINS_IN_DAY;
+      var item = document.createElement('div');
+      item.className = 'result-item' + (idx === 0 ? ' best' : '');
+      item.innerHTML =
+        '<div class="result-info">' +
+          '<span class="result-cycles">' + opt.label + '</span>' +
+          '<span class="result-hours">'  + opt.dur   + ' сна</span>' +
+        '</div>' +
+        '<span class="result-time">' + pad(bed / 60) + ':' + pad(bed % 60) + '</span>';
 
-      const h = Math.floor(bedMinutes / 60);
-      const m = bedMinutes % 60;
-      const timeStr = `${pad(h)}:${pad(m)}`;
-
-      const item = document.createElement('div');
-      item.className = 'result-item';
-      item.innerHTML = `
-        <div class="result-info">
-          <span class="result-cycles">${label}</span>
-          <span class="result-hours">${duration} сна</span>
-        </div>
-        <span class="result-time">${timeStr}</span>
-      `;
       resultsEl.appendChild(item);
     });
 
-    // Принудительный reflow для повторного запуска анимации
     void resultsEl.offsetWidth;
     resultsEl.classList.add('visible');
   }
 
-  // Расчёт по нажатию Enter в поле ввода
-  document.getElementById('wakeTime').addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') calculate();
+  /* Переход между полями: после ввода двух цифр часов — фокус на минуты */
+  document.getElementById('wakeHour').addEventListener('input', function () {
+    if (this.value.length >= 2) document.getElementById('wakeMin').focus();
+  });
+
+  /* Enter запускает расчёт */
+  [document.getElementById('wakeHour'), document.getElementById('wakeMin')]
+    .forEach(function (el) {
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') calculate();
+      });
+    });
+
+  /* Снимаем класс ошибки после любого изменения */
+  document.getElementById('timeRow').addEventListener('input', function () {
+    this.classList.remove('error');
   });
 </script>
 
